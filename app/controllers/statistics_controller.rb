@@ -1,4 +1,5 @@
 require 'faraday'
+require 'twitter'
 
 class StatisticsController < ApplicationController
   before_action :set_statistic, only: %i[ show edit update destroy ]
@@ -18,25 +19,51 @@ class StatisticsController < ApplicationController
   end
 
   def eth
-    @statistics = fetch_eth_statistics
-    @title = "Downloads of eth dev packages this week"
-    render 'tweet'
+    if !password_match
+      render plain: 'not allowed' and return
+    end
+    
+    statistics = fetch_eth_statistics
+    content = "Downloads of eth dev packages this week \n" + statistics.map {|statistic| "#{statistic.package} #{view_context.number_to_human(statistic.downloads, units: { unit: "", thousand: "k", million: "m"})}"}.join("\n")
+    
+    post_tweet(content)
+
+    render plain: content
   end
 
   def other
-    @statistics = fetch_other_statistics
-    @title = "Downloads of non-eth web3 dev packages this week"
-    render 'tweet'
+    if !password_match
+      render plain: 'not allowed' and return
+    end
+    statistics = fetch_other_statistics
+    content = "Downloads of non-eth web3 packages this week \n" + statistics.map {|statistic| "#{statistic.package} #{view_context.number_to_human(statistic.downloads, units: { unit: "", thousand: "k", million: "m"})}"}.join("\n")
+
+    post_tweet(content)
+    
+    render plain: content
   end
 
   private
-  
+
+    def password_match
+      params[:password] == ENV["password"]
+    end
+
+    def post_tweet(content)
+      client = Twitter::REST::Client.new do |config|
+        config.consumer_key        = ENV["consumer_key"]
+        config.consumer_secret     = ENV["consumer_secret"]
+        config.access_token        = ENV["access_token"]
+        config.access_token_secret = ENV["access_token_secret"]
+      end
+      client.update(content)
+    end
 
     def fetch_eth_statistics
       eth_url = LAST_WEEK_BASE_URL+ETH.join(',')
       eth_openzeppelin_url = LAST_WEEK_BASE_URL+'@openzeppelin/contracts'
  
-      @eth_statistics = Rails.cache.fetch("eth_stats", expires_in: 1.day) do
+      Rails.cache.fetch("eth_stats", expires_in: 1.day) do
         [eth_url, eth_openzeppelin_url].map do |url|
           parse_stats(url)
         end.flatten.sort_by{|stat| -stat.downloads}
