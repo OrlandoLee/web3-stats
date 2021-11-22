@@ -8,30 +8,53 @@ class StatisticsController < ApplicationController
   POLKDOT = ['polkadot']
   ALGORAND = ['algosdk']
   FLOW = ['flow']
+  STELLAR = ['stellar-sdk']
   LAST_WEEK_BASE_URL = 'https://api.npmjs.org/downloads/point/last-week/'
 
   # GET /statistics or /statistics.json
   def index
-    eth_url = LAST_WEEK_BASE_URL+ETH.join(',')
-    eth_openzeppelin_url = LAST_WEEK_BASE_URL+'@openzeppelin/contracts'
-    solana_solana_url = LAST_WEEK_BASE_URL+ '@solana/web3.js'
-    other_url = LAST_WEEK_BASE_URL + [AVALANCHE, POLKDOT, ALGORAND, FLOW].flatten.join(',')
+    @eth_statistics = fetch_eth_statistics
+    @other_statistics = fetch_other_statistics
+  end
 
-    @eth_statistics = Rails.cache.fetch("eth_stats", expires_in: 1.day) do
-      [eth_url, eth_openzeppelin_url].map do |url|
-        parse_stats(url)
-      end.flatten.sort_by{|stat| -stat.downloads}
+  def eth
+    @statistics = fetch_eth_statistics
+    @title = "Downloads of eth dev packages this week"
+    render 'tweet'
+  end
+
+  def other
+    @statistics = fetch_other_statistics
+    @title = "Downloads of non-eth web3 dev packages this week"
+    render 'tweet'
+  end
+
+  private
+  
+
+    def fetch_eth_statistics
+      eth_url = LAST_WEEK_BASE_URL+ETH.join(',')
+      eth_openzeppelin_url = LAST_WEEK_BASE_URL+'@openzeppelin/contracts'
+ 
+      @eth_statistics = Rails.cache.fetch("eth_stats", expires_in: 1.day) do
+        [eth_url, eth_openzeppelin_url].map do |url|
+          parse_stats(url)
+        end.flatten.sort_by{|stat| -stat.downloads}
+      end
     end
-    @other_statistics = Rails.cache.fetch("other_stats", expires_in: 1.day) do
+
+    def fetch_other_statistics
+      solana_solana_url = LAST_WEEK_BASE_URL+ '@solana/web3.js'
+other_url = LAST_WEEK_BASE_URL + [AVALANCHE, POLKDOT, ALGORAND, FLOW, STELLAR].flatten.join(',')
+
+      Rails.cache.fetch("other_stats", expires_in: 1.day) do
       [solana_solana_url, other_url].map do |url|
         parse_stats(url)
       end.flatten.sort_by{|stat| -stat.downloads}
     end
 
-  end
+    end
 
-  private
-  
 
     def parse_stats(url)
       response = Faraday.get url

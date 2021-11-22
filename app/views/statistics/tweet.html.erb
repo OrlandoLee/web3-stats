@@ -1,0 +1,5 @@
+<%= @statistics[0].start_date %> to <%= @statistics[0].end_date %> <br>
+<%= @title %> <br>
+<% @statistics.each do |statistic| %>
+  <%= statistic.package %> <%= number_to_human(statistic.downloads, units: { unit: "", thousand: "k", million: "m"}) %> <br>
+<% end %>
