@@ -24,7 +24,7 @@ class StatisticsController < ApplicationController
     end
     
     statistics = fetch_eth_statistics
-    content = "Downloads of eth dev packages this week \n" + statistics.map {|statistic| "#{statistic.package} #{view_context.number_to_human(statistic.downloads, units: { unit: "", thousand: "k", million: "m"})}"}.join("\n")
+    content = "Downloads of eth dev packages this week \n" + statistics.map {|statistic| "#{statistic.package} #{view_context.number_to_human(statistic.downloads, units: { unit: "", thousand: "k", million: "m"})}"}.join("\n")+"\n"+"For more: web3stats.com"
     
     post_tweet(content)
 
@@ -36,7 +36,7 @@ class StatisticsController < ApplicationController
       render plain: 'not allowed' and return
     end
     statistics = fetch_other_statistics
-    content = "Downloads of non-eth web3 packages this week \n" + statistics.map {|statistic| "#{statistic.package} #{view_context.number_to_human(statistic.downloads, units: { unit: "", thousand: "k", million: "m"})}"}.join("\n")
+    content = "Downloads of non-eth web3 packages this week \n" + statistics.map {|statistic| "#{statistic.package} #{view_context.number_to_human(statistic.downloads, units: { unit: "", thousand: "k", million: "m"})}"}.join("\n")+"\n"+"For more: web3stats.com"
 
     post_tweet(content)
     
