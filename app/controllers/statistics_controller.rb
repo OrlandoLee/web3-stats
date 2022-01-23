@@ -10,6 +10,7 @@ class StatisticsController < ApplicationController
   ALGORAND = ['algosdk']
   FLOW = ['flow']
   STELLAR = ['stellar-sdk']
+  NEAR = ['near-api-js', 'near-cli']
   LAST_WEEK_BASE_URL = 'https://api.npmjs.org/downloads/point/last-week/'
 
   # GET /statistics or /statistics.json
@@ -72,7 +73,7 @@ class StatisticsController < ApplicationController
 
     def fetch_other_statistics
       solana_solana_url = LAST_WEEK_BASE_URL+ '@solana/web3.js'
-other_url = LAST_WEEK_BASE_URL + [AVALANCHE, POLKDOT, ALGORAND, FLOW, STELLAR].flatten.join(',')
+other_url = LAST_WEEK_BASE_URL + [AVALANCHE, POLKDOT, ALGORAND, FLOW, STELLAR, NEAR].flatten.join(',')
 
       Rails.cache.fetch("other_stats", expires_in: 1.day) do
       [solana_solana_url, other_url].map do |url|
