@@ -4,7 +4,7 @@ require 'twitter'
 class StatisticsController < ApplicationController
   before_action :set_statistic, only: %i[ show edit update destroy ]
 
-  ETH = ['ethers','web3','ganache-cli','hardhat','truffle','eth-brownie']
+  ETH = ['ethers','web3','ganache-cli','hardhat','truffle','ganache']
   AVALANCHE = ['avalanche']
   POLKDOT = ['polkadot']
   ALGORAND = ['algosdk']
@@ -13,10 +13,12 @@ class StatisticsController < ApplicationController
   NEAR = ['near-api-js', 'near-cli']
   LAST_WEEK_BASE_URL = 'https://api.npmjs.org/downloads/point/last-week/'
 
+
   # GET /statistics or /statistics.json
   def index
     @eth_statistics = fetch_eth_statistics
     @other_statistics = fetch_other_statistics
+    @mapping = build_mapping
   end
 
   def eth
@@ -80,7 +82,6 @@ other_url = LAST_WEEK_BASE_URL + [AVALANCHE, POLKDOT, ALGORAND, FLOW, STELLAR, N
         parse_stats(url)
       end.flatten.sort_by{|stat| -stat.downloads}
     end
-
     end
 
 
@@ -107,5 +108,42 @@ other_url = LAST_WEEK_BASE_URL + [AVALANCHE, POLKDOT, ALGORAND, FLOW, STELLAR, N
             )
         end
       end
+    end
+
+    def build_mapping
+      mapping = {}
+      NEAR.map do |lib|
+        mapping[lib] = "NEAR Protocol (NEAR)"
+      end
+
+      ETH.map do |lib|
+        mapping[lib] = "ETH"
+      end
+
+      AVALANCHE.map do |lib|
+        mapping[lib] = "Avalanche (AVAX)"
+      end
+
+      POLKDOT.map do |lib|
+        mapping[lib] = "Polkadot (DOT)"
+      end
+
+      ALGORAND.map do |lib|
+        mapping[lib] = "Algorand (ALGO)"
+      end
+
+      FLOW.map do |lib|
+        mapping[lib] = "Flow (FLOW)"
+      end
+
+      STELLAR.map do |lib|
+        mapping[lib] = "Stellar (XLM)"
+      end
+
+      ['@solana/web3.js'].map do |lib|
+        mapping[lib] = "Solana (SOL)"
+      end
+
+      return mapping
     end
 end

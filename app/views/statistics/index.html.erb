@@ -29,6 +29,7 @@
     <tr>
       <th>Package</th>
       <th>Downloads</th>
+      <th>Chain</th>
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -38,6 +39,7 @@
       <tr>
         <td><%= statistic.package %></td>
         <td><%= number_to_human(statistic.downloads, units: { unit: "", thousand: "k", million: "m"}) %></td>
+        <td><%= @mapping[statistic.package]%></td>
       </tr>
     <% end %>
   </tbody>
